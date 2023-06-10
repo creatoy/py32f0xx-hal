@@ -1,0 +1,6 @@
+/target/
+**/*.orig
+**/*.rs.bk
+Cargo.lock
+*.txt
+.vscode/launch.json
