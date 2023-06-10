@@ -1,0 +1,154 @@
+[package]
+edition = "2018"
+authors = [
+    "Daniel Egger <daniel@eggers-club.de>",
+    "Thomas Bytheway <github@harkonen.net>",
+    "Jesse Braham <jesse@beta7.io>",
+]
+categories = [
+    "embedded",
+    "hardware-support",
+    "no-std",
+]
+description = "Peripheral access API for py32F0 series microcontrollers"
+documentation = "https://docs.rs/crate/py32f0xx-hal"
+
+keywords = [
+    "arm",
+    "cortex-m",
+    "py32f0xx",
+    "hal",
+]
+license = "0BSD"
+name = "py32f0xx-hal"
+readme = "README.md"
+repository = "https://github.com/creatoy/py32f0xx-hal"
+version = "0.0.1"
+
+[package.metadata.docs.rs]
+features = ["py32f030", "rt"]
+targets = ["thumbv6m-none-eabi"]
+
+[dependencies]
+bare-metal = { version = "1.0.0" }
+cast = "0.3.0"
+cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
+embedded-hal = { version = "0.2.7", features = ["unproven"] }
+embedded-time = "0.12.1"
+nb = "1.1.0"
+void = { version = "1.0.2", default-features = false }
+rtt-target = "0.4.0"
+
+[dependencies.py32f0]
+version = "0.0.1"
+features = ["py32f030"]
+
+[dev-dependencies]
+cortex-m-rt = "0.7.3"
+panic-halt = "0.2.0"
+
+[features]
+device-selected = []
+rt = ["py32f0/rt"]
+py32f030 = ["py32f0/py32f030", "device-selected"]
+py32f003 = ["py32f0/py32f003", "device-selected"]
+py32f002a = ["py32f0/py32f002a", "device-selected"]
+
+# Features based on the GPIO peripheral version.
+# This determines the pin function mapping of the MCU.
+# The features correspond to the product categories.
+#
+# Note: The easiest way to pick the proper package feature is to apply
+# the matching feature for your MCU!
+# Physics packages
+lqfp32k1 = []
+lqfp32k2 = []
+qfn32k1 = []
+qfn32k2 = []
+ssop24e1 = []
+ssop24e2 = []
+qfn20f1 = []
+qfn20f2 = []
+tssop20f1 = []
+tssop20f2 = []
+tssop20f3 = []
+tssop20f4 = []
+
+# Features based on Flash size (in kbytes)
+flash-16 = []
+flash-20 = []
+flash-32 = []
+flash-48 = []
+flash-64 = []
+
+# Features based on RAM size (in kbytes)
+ram-2 = []
+ram-3 = []
+ram-4 = []
+ram-6 = []
+ram-8 = []
+
+# MCU aliases
+#
+# Note: These are just aliases, they should not be used to directly feature gate
+# functionality in the HAL! However, user code should usually depend on a MCU alias.
+py32f030k1xt = ["py32f030", "lqfp32k1"]
+py32f030k2xt = ["py32f030", "lqfp32k2"]
+py32f030k1xu = ["py32f030", "qfn32k1"]
+py32f030k2xu = ["py32f030", "qfn32k2"]
+py32f030e1xm = ["py32f030", "ssop24e1"]
+py32f030e2xm = ["py32f030", "ssop24e2"]
+py32f030f1xu = ["py32f030", "qfn20f1"]
+py32f030f2xu = ["py32f030", "qfn20f2"]
+py32f030f1xp = ["py32f030", "tssop20f1"]
+py32f030f2xp = ["py32f030", "tssop20f2"]
+py32f030f3xp = ["py32f030", "tssop20f3"]
+py32f030f4xp = ["py32f030", "tssop20f4"]
+
+# Features correspond specific mcu
+py32f030k14t = ["py32f030k1xt", "flash-16", "ram-2"]
+py32f030k16t = ["py32f030k1xt", "flash-32", "ram-4"]
+py32f030k17t = ["py32f030k1xt", "flash-48", "ram-6"]
+py32f030k18t = ["py32f030k1xt", "flash-64", "ram-8"]
+py32f030k24t = ["py32f030k2xt", "flash-16", "ram-2"]
+py32f030k26t = ["py32f030k2xt", "flash-32", "ram-4"]
+py32f030k27t = ["py32f030k2xt", "flash-48", "ram-6"]
+py32f030k28t = ["py32f030k2xt", "flash-64", "ram-8"]
+
+py32f030k14u = ["py32f030k1xu", "flash-16", "ram-2"]
+py32f030k16u = ["py32f030k1xu", "flash-32", "ram-4"]
+py32f030k17u = ["py32f030k1xu", "flash-48", "ram-6"]
+py32f030k18u = ["py32f030k1xu", "flash-64", "ram-8"]
+py32f030k24u = ["py32f030k2xu", "flash-16", "ram-2"]
+py32f030k26u = ["py32f030k2xu", "flash-32", "ram-4"]
+py32f030k27u = ["py32f030k2xu", "flash-48", "ram-6"]
+py32f030k28u = ["py32f030k2xu", "flash-64", "ram-8"]
+
+py32f030e18m = ["py32f030e1xm", "flash-64", "ram-8"]
+py32f030e26m = ["py32f030e2xm", "flash-32", "ram-4"]
+
+py32f030f16u = ["py32f030f1xu", "flash-32", "ram-4"]
+py32f030f17u = ["py32f030f1xu", "flash-48", "ram-6"]
+py32f030f18u = ["py32f030f1xu", "flash-64", "ram-8"]
+py32f030f26u = ["py32f030f2xu", "flash-32", "ram-4"]
+py32f030f27u = ["py32f030f2xu", "flash-48", "ram-6"]
+py32f030f28u = ["py32f030f2xu", "flash-64", "ram-8"]
+
+py32f030f16p = ["py32f030f1xp", "flash-32", "ram-4"]
+py32f030f17p = ["py32f030f1xp", "flash-48", "ram-6"]
+py32f030f18p = ["py32f030f1xp", "flash-64", "ram-8"]
+py32f030f26p = ["py32f030f2xp", "flash-32", "ram-4"]
+py32f030f27p = ["py32f030f2xp", "flash-48", "ram-6"]
+py32f030f28p = ["py32f030f2xp", "flash-64", "ram-8"]
+
+py32f030f38p = ["py32f030f3xp", "flash-64", "ram-8"]
+py32f030f46p = ["py32f030f4xp", "flash-32", "ram-4"]
+
+[profile.dev]
+debug = true
+lto = true
+
+[profile.release]
+lto = true
+debug = true
+opt-level = "s"
