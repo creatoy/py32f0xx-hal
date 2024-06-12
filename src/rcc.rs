@@ -54,6 +54,8 @@ pub enum MCOSrc {
     Pll = 5,
     ///6: LSI oscillator clock selected
     Lsi = 6,
+    
+    #[cfg(any(feature = "py32f030", feature = "py32f003"))]
     ///7: LSE oscillator clock selected
     Lse = 7,
 }
@@ -67,6 +69,7 @@ impl From<MCOSrc> for MCOSEL_A {
             MCOSrc::Hse => MCOSEL_A::Hse,
             MCOSrc::Pll => MCOSEL_A::Pll,
             MCOSrc::Lsi => MCOSEL_A::Lsi,
+            #[cfg(any(feature = "py32f030", feature = "py32f003"))]
             MCOSrc::Lse => MCOSEL_A::Lse,
         }
     }
@@ -165,7 +168,7 @@ pub enum HSEBypassMode {
     Bypassed,
 }
 /// RCC for F0x0 devices
-#[cfg(any(feature = "py32f030", feature = "py32f003"))]
+//#[cfg(any(feature = "py32f030", feature = "py32f003"))]
 mod inner {
     use crate::pac::{rcc::cfgr::SW_A, RCC};
 
@@ -248,6 +251,7 @@ mod inner {
         }
     }
 
+    #[cfg(any(feature = "py32f030", feature = "py32f003"))]
     pub(super) fn enable_pll(
         rcc: &mut RCC,
         c_src: &SysClkSource,
@@ -266,6 +270,16 @@ mod inner {
 
         rcc.cfgr
             .modify(|_, w| unsafe { w.ppre().bits(ppre_bits).hpre().bits(hpre_bits).sw().pll() });
+    }
+
+    #[cfg(not(any(feature = "py32f030", feature = "py32f003")))]
+    pub(super) fn enable_pll(
+        _rcc: &mut RCC,
+        _c_src: &SysClkSource,
+        _ppre_bits: u8,
+        _hpre_bits: u8,
+    ) {
+        panic!("PLL only supported on py32f030 and py32f003. Please select a sysclk and clock source so as to not require the use of PLL")
     }
 
     pub(super) fn get_sww(c_src: &SysClkSource) -> SW_A {
@@ -316,6 +330,7 @@ impl CFGR {
         self.pclk = Some(freq.into().0);
         self
     }
+
 
     pub fn sysclk<F>(mut self, freq: F) -> Self
     where
@@ -411,6 +426,7 @@ impl CFGR {
 
         // Enable PLL
         if pll_en {
+            
             self::inner::enable_pll(
                 &mut self.rcc,
                 &self.clock_src,

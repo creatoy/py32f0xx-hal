@@ -67,7 +67,10 @@ use core::{
 use embedded_hal::prelude::*;
 
 use crate::{rcc::Rcc, time::Bps};
-use crate::gpio::{gpioa::*, gpiob::*, gpiof::*, Alternate, AF0, AF1, AF3, AF4, AF8, AF9};
+use crate::gpio::{gpioa::*, gpiob::*, gpiof::*, Alternate, AF0, AF1, AF8};
+
+#[cfg(any(feature = "py32f030", feature = "py32f003"))]
+use crate::gpio::{AF3, AF4, AF8, AF9};
 
 use core::marker::PhantomData;
 
@@ -114,16 +117,6 @@ macro_rules! impl_pins {
     feature = "qfn32k2",
 ))]
 impl_pins!(
-    PA0, AF9, USART2, TxPin;
-    PA1, AF9, USART2, RxPin;
-    PA2, AF1, USART1, TxPin;
-    PA2, AF4, USART2, TxPin;
-    PA3, AF1, USART1, RxPin;
-    PA3, AF4, USART2, RxPin;
-    PA4, AF9, USART2, TxPin;
-    PA5, AF9, USART2, RxPin;
-    PA7, AF8, USART1, TxPin;
-    PA7, AF9, USART2, TxPin;
     PA8, AF8, USART1, RxPin;
     PA8, AF9, USART2, RxPin;
     PA9, AF1, USART1, TxPin;
@@ -132,31 +125,21 @@ impl_pins!(
     PA10, AF1, USART1, RxPin;
     PA10, AF4, USART2, RxPin;
     PA10, AF8, USART1, TxPin;
-    PA13, AF8, USART1, RxPin;
-    PA14, AF1, USART1, TxPin;
-    PA14, AF4, USART2, TxPin;
-    PA15, AF1, USART1, RxPin;
-    PA15, AF4, USART2, RxPin;
-    PB2, AF0, USART1, RxPin;
-    PB2, AF3, USART2, RxPin;
+
     PB6, AF0, USART1, TxPin;
     PB6, AF4, USART2, TxPin;
     PB7, AF0, USART1, RxPin;
     PB7, AF4, USART2, RxPin;
-    PB8, AF4, USART2, TxPin;
-    PB8, AF8, USART1, TxPin;
-    PF0, AF4, USART2, RxPin;
-    PF0, AF8, USART1, RxPin;
-    PF0, AF9, USART2, TxPin;
-    PF1, AF4, USART2, TxPin;
-    PF1, AF8, USART1, TxPin;
-    PF1, AF9, USART2, RxPin;
-    PF2, AF4, USART2, RxPin;
+
     PF3, AF0, USART1, TxPin;
     PF3, AF4, USART2, TxPin;
 );
 
 #[cfg(any(
+    feature = "lqfp32k1",
+    feature = "lqfp32k2",
+    feature = "qfn32k2",
+
     feature = "ssop24e1",
     feature = "ssop24e2",
 ))]
@@ -189,6 +172,29 @@ impl_pins!(
     PF2, AF4, USART2, RxPin;
 );
 
+#[cfg(feature = "py32f002a")]
+impl_pins!(
+    PA2, AF1, USART1, TxPin;
+    PA3, AF1, USART1, RxPin;
+
+    PA7, AF8, USART1, TxPin;
+    PA8, AF8, USART1, RxPin;
+
+    PA9, AF1, USART1, TxPin;
+    PA9, AF8, USART1, RxPin;
+
+    PA10, AF1, USART1, RxPin;
+    PA10, AF8, USART1, TxPin;
+
+    PA13, AF8, USART1, RxPin;
+    PA14, AF1, USART1, TxPin;
+    
+    PB2, AF0, USART1, RxPin;
+    PB6, AF0, USART1, TxPin;
+
+    PF0, AF8, USART1, RxPin;
+    PF1, AF8, USART1, TxPin;
+);
 
 /// Serial abstraction
 pub struct Serial<USART, TXPIN, RXPIN> {
