@@ -257,10 +257,9 @@ macro_rules! spi {
 spi! {
     SPI1: (spi1, spi1en, spi1rst, apbenr2, apbrstr2),
 }
-#[cfg(any(
+#[cfg(
     feature = "py32f030",
-    feature = "py32f003",
-))]
+)]
 spi! {
     SPI2: (spi2, spi2en, spi2rst, apbenr1, apbrstr1),
 }

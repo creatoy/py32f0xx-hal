@@ -54,8 +54,8 @@ pub enum MCOSrc {
     Pll = 5,
     ///6: LSI oscillator clock selected
     Lsi = 6,
-    
-    #[cfg(any(feature = "py32f030", feature = "py32f003"))]
+
+    #[cfg(feature = "py32f030")]
     ///7: LSE oscillator clock selected
     Lse = 7,
 }
@@ -69,7 +69,7 @@ impl From<MCOSrc> for MCOSEL_A {
             MCOSrc::Hse => MCOSEL_A::Hse,
             MCOSrc::Pll => MCOSEL_A::Pll,
             MCOSrc::Lsi => MCOSEL_A::Lsi,
-            #[cfg(any(feature = "py32f030", feature = "py32f003"))]
+            #[cfg(feature = "py32f030")]
             MCOSrc::Lse => MCOSEL_A::Lse,
         }
     }
@@ -243,7 +243,7 @@ mod inner {
         // Enable the requested clock
         match c_src {
             SysClkSource::HSE(freq, bypassed) => {
-                hse_enable(rcc, freq.clone(), bypassed);
+                hse_enable(rcc, *freq, bypassed);
             }
             SysClkSource::HSISYS(fs) => {
                 hsi_enable(rcc, fs);
@@ -251,7 +251,7 @@ mod inner {
         }
     }
 
-    #[cfg(any(feature = "py32f030", feature = "py32f003"))]
+    #[cfg(feature = "py32f030")]
     pub(super) fn enable_pll(
         rcc: &mut RCC,
         c_src: &SysClkSource,
@@ -272,14 +272,15 @@ mod inner {
             .modify(|_, w| unsafe { w.ppre().bits(ppre_bits).hpre().bits(hpre_bits).sw().pll() });
     }
 
-    #[cfg(not(any(feature = "py32f030", feature = "py32f003")))]
+    #[cfg(not(feature = "py32f030"))]
+    #[inline(always)]
     pub(super) fn enable_pll(
         _rcc: &mut RCC,
         _c_src: &SysClkSource,
         _ppre_bits: u8,
         _hpre_bits: u8,
     ) {
-        panic!("PLL only supported on py32f030 and py32f003. Please select a sysclk and clock source so as to not require the use of PLL")
+        panic!("PLL only supported on py32f030 and py32f003. Please select a sysclk and clock source combination so as to not require the use of PLL")
     }
 
     pub(super) fn get_sww(c_src: &SysClkSource) -> SW_A {

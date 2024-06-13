@@ -70,7 +70,7 @@ use crate::{rcc::Rcc, time::Bps};
 use crate::gpio::{gpioa::*, gpiob::*, gpiof::*, Alternate, AF0, AF1, AF8};
 
 #[cfg(any(feature = "py32f030", feature = "py32f003"))]
-use crate::gpio::{AF3, AF4, AF8, AF9};
+use crate::gpio::{AF3, AF4, AF9};
 
 use core::marker::PhantomData;
 
