@@ -113,6 +113,7 @@ macro_rules! brk {
         $tim.bdtr.modify(|_, w| w.aoe().set_bit());
     };
     (TIM16, $tim:ident) => {
+        #[cfg(any(feature = "py32f030", feature = "py32f003"))]
         $tim.bdtr.modify(|_, w| w.aoe().set_bit());
     };
     (TIM17, $tim:ident) => {
@@ -122,6 +123,7 @@ macro_rules! brk {
 }
 
 // Timer with four output channels 16 Bit Timer
+#[cfg(any(feature = "py32f030", feature = "py32f003"))]
 macro_rules! pwm_4_channels {
     ($($TIMX:ident: ($timX:ident, $timXen:ident, $timXrst:ident, $apbenr:ident, $apbrstr:ident),)+) => {
         $(
@@ -583,6 +585,7 @@ macro_rules! pwm_4_channels_with_3_complementary_outputs {
     };
 }
 
+#[cfg(any(feature = "py32f030", feature = "py32f003"))]
 macro_rules! pwm_2_channels {
     ($($TIMX:ident: ($timX:ident, $timXen:ident, $timXrst:ident, $apbenr:ident, $apbrstr:ident),)+) => {
         $(
@@ -697,6 +700,7 @@ macro_rules! pwm_2_channels {
 }
 
 // General purpose timer with one output channel (TIM14)
+#[cfg(any(feature = "py32f030", feature = "py32f003"))]
 macro_rules! pwm_1_channel {
     ($($TIMX:ident: ($timX:ident, $timXen:ident, $timXrst:ident, $apbenr:ident, $apbrstr:ident),)+) => {
         $(
@@ -777,6 +781,7 @@ macro_rules! pwm_1_channel {
 }
 
 // General purpose timer with one output channel (TIM16/TIM17)
+#[cfg(any(feature = "py32f030", feature = "py32f003"))]
 macro_rules! pwm_1_channel_with_complementary_outputs {
     ($($TIMX:ident: ($timX:ident, $timXen:ident, $timXrst:ident, $apbenr:ident, $apbrstr:ident),)+) => {
         $(
@@ -860,13 +865,21 @@ macro_rules! pwm_1_channel_with_complementary_outputs {
 }
 
 use crate::pac::*;
-
+#[cfg(any(feature = "py32f030", feature = "py32f003"))]
 pwm_4_channels!(TIM3: (tim3, tim3en, tim3rst, apbenr1, apbrstr1),);
 
 pwm_4_channels_with_3_complementary_outputs!(TIM1: (tim1, tim1en, tim1rst, apbenr2, apbrstr2),);
+
+#[cfg(any(feature = "py32f030", feature = "py32f003"))]
 pwm_1_channel!(TIM14: (tim14, tim14en, tim14rst, apbenr2, apbrstr2),);
 
+// TIM16 is available for all devices but it can not be used for PWM for py32f002a
+#[cfg(any(feature = "py32f030", feature = "py32f003"))]
 pwm_1_channel_with_complementary_outputs!(
     TIM16: (tim16, tim16en, tim16rst, apbenr2, apbrstr2),
+);
+
+#[cfg(any(feature = "py32f030", feature = "py32f003"))]
+pwm_1_channel_with_complementary_outputs!(
     TIM17: (tim17, tim17en, tim17rst, apbenr2, apbrstr2),
 );
