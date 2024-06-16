@@ -67,7 +67,13 @@ use core::{
 use embedded_hal::prelude::*;
 
 use crate::{rcc::Rcc, time::Bps};
-use crate::gpio::{gpioa::*, gpiob::*, gpiof::*, Alternate, AF0, AF1, AF8};
+use crate::gpio::{gpioa::*, gpiob::*, Alternate, AF0, AF1, AF8};
+
+#[cfg(feature = "py32f002b")]
+use crate::gpio::AF3;
+
+#[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
+use crate::gpio::gpiof::*;
 
 #[cfg(any(feature = "py32f030", feature = "py32f003"))]
 use crate::gpio::{AF3, AF4, AF9};
@@ -177,7 +183,7 @@ impl_pins!(
     PA2, AF1, USART1, TxPin;
     PA3, AF1, USART1, RxPin;
 
-    PA7, AF8, USART1, TxPin;
+    PA7, AF8, USART1, TxPin;.
     PA8, AF8, USART1, RxPin;
 
     PA9, AF1, USART1, TxPin;
@@ -194,6 +200,19 @@ impl_pins!(
 
     PF0, AF8, USART1, RxPin;
     PF1, AF8, USART1, TxPin;
+);
+
+#[cfg(feature = "py32f002b")]
+impl_pins!(
+    PA2, AF1, USART1, RxPin;
+    PA3, AF1, USART1, TxPin;
+    PA4, AF1, USART1, RxPin;
+    PA6, AF1, USART1, TxPin;
+    PA7, AF1, USART1, TxPin;
+    PA7, AF3, USART1, RxPin;
+    PB4, AF1, USART1, TxPin;
+    PB5, AF1, USART1, RxPin;
+    PB6, AF1, USART1, TxPin;
 );
 
 /// Serial abstraction

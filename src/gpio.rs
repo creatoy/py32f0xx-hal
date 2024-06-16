@@ -187,8 +187,9 @@ macro_rules! gpio_trait {
 }
 
 gpio_trait!(gpioa);
-gpio_trait!(gpiof);
 
+#[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
+gpio_trait!(gpiof);
 macro_rules! gpio {
     ([$($GPIOX:ident, $gpiox:ident, $gpioxenr:ident, $PXx:ident, $gate:meta => [
         $($PXi:ident: ($pxi:ident, $i:expr, $MODE:ty),)+
@@ -246,11 +247,19 @@ macro_rules! gpio {
                             reg.afrl.modify(|r, w| {
                                 w.bits((r.bits() & !(0b1111 << offset2)) | (mode << offset2))
                             });
-                        } else {
-                            let offset2 = offset2 - 32;
-                            reg.afrh.modify(|r, w| {
-                                w.bits((r.bits() & !(0b1111 << offset2)) | (mode << offset2))
-                            });
+                        } 
+                        else {
+                            #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))] {
+                                let offset2 = offset2 - 32;
+                                reg.afrh.modify(|r, w| {
+                                    w.bits((r.bits() & !(0b1111 << offset2)) | (mode << offset2))
+                                });
+                            }
+
+                            #[cfg(not(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a")))] {
+                                // py32f002b does only have a maximum of 8 pins per port so it does not have AFRH
+                                unreachable!();
+                            }
                         }
                         reg.moder.modify(|r, w| {
                             w.bits((r.bits() & !(0b11 << offset)) | (0b10 << offset))
@@ -683,7 +692,11 @@ gpio!([
         PB6: (pb6, 6, Input<Floating>),
         PB7: (pb7, 7, Input<Floating>),
         PB8: (pb8, 8, Input<Floating>),
-    ],
+    ]
+]);
+
+#[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
+gpio!([
     GPIOF, gpiof, gpiofen, PF, any(
         feature = "device-selected"
     ) => [
@@ -693,4 +706,4 @@ gpio!([
         PF3: (pf3, 3, Input<Floating>),
         PF4: (pf4, 4, Input<Floating>),
     ]
-    ]);
+]);

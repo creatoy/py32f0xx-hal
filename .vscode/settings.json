@@ -1,4 +1,4 @@
 {
-    "rust-analyzer.cargo.features": ["py32f030k16t"],
+    "rust-analyzer.cargo.features": ["py32f002b"],
     "rust-analyzer.showUnlinkedFileNotification": false
 }

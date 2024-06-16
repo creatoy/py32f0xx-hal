@@ -6,6 +6,8 @@ pub use py32f0;
 
 #[cfg(feature = "py32f002a")]
 pub use py32f0::py32f002a as pac;
+#[cfg(feature = "py32f002b")]
+pub use py32f0::py32f002b as pac;
 #[cfg(feature = "py32f003")]
 pub use py32f0::py32f003 as pac;
 #[cfg(feature = "py32f030")]

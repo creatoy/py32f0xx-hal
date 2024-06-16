@@ -40,8 +40,9 @@ void = { version = "1.0.2", default-features = false }
 rtt-target = "0.4.0"
 
 [dependencies.py32f0]
-version = "0.0.1"
+version = "0.0.2"
 features = []
+path = "../py32-rs/py32f0"
 
 [dev-dependencies]
 cortex-m-rt = "0.7.3"
@@ -53,6 +54,7 @@ rt = ["py32f0/rt"]
 py32f030 = ["py32f0/py32f030", "device-selected"]
 py32f003 = ["py32f0/py32f003", "device-selected"]
 py32f002a = ["py32f0/py32f002a", "device-selected"]
+py32f002b = ["py32f0/py32f002b", "device-selected"]
 
 # Features based on the GPIO peripheral version.
 # This determines the pin function mapping of the MCU.

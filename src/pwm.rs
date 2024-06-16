@@ -700,7 +700,7 @@ macro_rules! pwm_2_channels {
 }
 
 // General purpose timer with one output channel (TIM14)
-#[cfg(any(feature = "py32f030", feature = "py32f003"))]
+#[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002b"))]
 macro_rules! pwm_1_channel {
     ($($TIMX:ident: ($timX:ident, $timXen:ident, $timXrst:ident, $apbenr:ident, $apbrstr:ident),)+) => {
         $(
@@ -870,7 +870,7 @@ pwm_4_channels!(TIM3: (tim3, tim3en, tim3rst, apbenr1, apbrstr1),);
 
 pwm_4_channels_with_3_complementary_outputs!(TIM1: (tim1, tim1en, tim1rst, apbenr2, apbrstr2),);
 
-#[cfg(any(feature = "py32f030", feature = "py32f003"))]
+#[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002b"))]
 pwm_1_channel!(TIM14: (tim14, tim14en, tim14rst, apbenr2, apbrstr2),);
 
 // TIM16 is available for all devices but it can not be used for PWM for py32f002a
