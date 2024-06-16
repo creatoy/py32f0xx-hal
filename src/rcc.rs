@@ -180,7 +180,9 @@ mod inner {
     pub(super) enum SysClkSource {
         // PLL(Option<(u32, super::HSEBypassMode)>),
         HSISYS(HSIFreq),
+        
         /// High-speed external clock(freq,bypassed)
+        #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
         HSE(u32, HSEBypassMode),
         // LSI,
         // LSE(u32),
@@ -208,10 +210,12 @@ mod inner {
                 let hsi_freq = get_hsi_sel_freq(c_src);
                 hsi_freq
             }
+            #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
             SysClkSource::HSE(freq, _) => *freq,
         }
     }
 
+    #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
     fn hse_enable(rcc: &mut RCC, freq: u32, bypassed: &HSEBypassMode) {
         let freq_bits = match freq {
             f if f >= 4_000_000 && f < 8_000_000 => 0b01,
@@ -242,6 +246,7 @@ mod inner {
     pub(super) fn enable_clock(rcc: &mut RCC, c_src: &SysClkSource) {
         // Enable the requested clock
         match c_src {
+            #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
             SysClkSource::HSE(freq, bypassed) => {
                 hse_enable(rcc, *freq, bypassed);
             }
@@ -286,6 +291,7 @@ mod inner {
     pub(super) fn get_sww(c_src: &SysClkSource) -> SW_A {
         match c_src {
             SysClkSource::HSISYS(_) => SW_A::Hsisys,
+            #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
             SysClkSource::HSE(_, _) => SW_A::Hse,
         }
     }
@@ -302,6 +308,7 @@ pub struct CFGR {
 }
 
 impl CFGR {
+    #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
     pub fn hse<F>(mut self, freq: F, bypass: HSEBypassMode) -> Self
     where
         F: Into<Hertz>,

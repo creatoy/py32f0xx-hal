@@ -324,6 +324,7 @@ where
         self
     }
 
+    #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
     pub fn into_8bit_width(self) -> Spi<SPI, SCKPIN, MISOPIN, MOSIPIN, EightBit> {
         // FRXTH: 8-bit threshold on RX FIFO
         // DS: 8-bit data size
@@ -339,6 +340,7 @@ where
         }
     }
 
+    #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
     pub fn into_16bit_width(self) -> Spi<SPI, SCKPIN, MISOPIN, MOSIPIN, SixteenBit> {
         // FRXTH: 16-bit threshold on RX FIFO
         // DS: 8-bit data size

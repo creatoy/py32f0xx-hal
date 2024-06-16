@@ -183,7 +183,7 @@ impl_pins!(
     PA2, AF1, USART1, TxPin;
     PA3, AF1, USART1, RxPin;
 
-    PA7, AF8, USART1, TxPin;.
+    PA7, AF8, USART1, TxPin;
     PA8, AF8, USART1, RxPin;
 
     PA9, AF1, USART1, TxPin;
