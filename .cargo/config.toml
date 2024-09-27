@@ -1,0 +1,18 @@
+[target.thumbv6m-none-eabi]
+runner = "probe-rs run --chip PY32F002Ax5"
+rustflags = [
+  "-C",
+  "link-arg=-Tlink.x",
+  "-C",
+  "link-arg=--nmagic",
+
+  # --- Defmt link script ---
+  "-C",
+  "link-arg=-Tdefmt.x",
+]
+
+[build]
+target = "thumbv6m-none-eabi"
+
+[env]
+DEFMT_LOG = "trace"

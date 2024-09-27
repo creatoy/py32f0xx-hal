@@ -1,7 +1,7 @@
 use crate::pac::rcc::{
-    cfgr::{MCOSEL_A, MCOPRE_A},
-    icscr::HSI_FS_A,
+    cfgr::{MCOPRE_A, MCOSEL_A},
     cr::HSIDIV_A,
+    icscr::HSI_FS_A,
 };
 
 use crate::pac::RCC;
@@ -33,9 +33,9 @@ pub struct Rcc {
 
 impl Rcc {
     pub fn configure_mco(&self, sel: MCOSrc, pre: MCODiv) {
-        self.regs.cfgr.modify(|_, w|
-            w.mcopre().variant(pre.into())
-                .mcosel().variant(sel.into()));
+        self.regs
+            .cfgr
+            .modify(|_, w| w.mcopre().variant(pre.into()).mcosel().variant(sel.into()));
     }
 }
 
@@ -138,7 +138,7 @@ impl From<HSIDiv> for HSIDIV_A {
         }
     }
 }
-    
+
 /// HSI Frequency select
 #[derive(Clone, Copy)]
 pub enum HSIFreq {
@@ -180,9 +180,8 @@ mod inner {
     pub(super) enum SysClkSource {
         // PLL(Option<(u32, super::HSEBypassMode)>),
         HSISYS(HSIFreq),
-        
+
         /// High-speed external clock(freq,bypassed)
-        #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
         HSE(u32, HSEBypassMode),
         // LSI,
         // LSE(u32),
@@ -210,7 +209,6 @@ mod inner {
                 let hsi_freq = get_hsi_sel_freq(c_src);
                 hsi_freq
             }
-            #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
             SysClkSource::HSE(freq, _) => *freq,
         }
     }
@@ -237,8 +235,15 @@ mod inner {
         while !rcc.cr.read().hserdy().bit_is_set() {}
     }
 
+    #[cfg(feature = "py32f002b")]
+    fn hse_enable(rcc: &mut RCC) {
+        // PY32F002B HSE only support the bypass mode
+        rcc.cr.modify(|_, w| w.hsebyp().bypassed());
+    }
+
     fn hsi_enable(rcc: &mut RCC, fs: &HSIFreq) {
-        rcc.icscr.modify(|_, w| w.hsi_fs().variant(fs.clone().into()));
+        rcc.icscr
+            .modify(|_, w| w.hsi_fs().variant(fs.clone().into()));
         rcc.cr.modify(|_, w| w.hsion().set_bit());
         while rcc.cr.read().hsirdy().bit_is_clear() {}
     }
@@ -246,9 +251,15 @@ mod inner {
     pub(super) fn enable_clock(rcc: &mut RCC, c_src: &SysClkSource) {
         // Enable the requested clock
         match c_src {
-            #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
             SysClkSource::HSE(freq, bypassed) => {
+                #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
                 hse_enable(rcc, *freq, bypassed);
+                #[cfg(feature = "py32f002b")]
+                if let HSEBypassMode::Bypassed = bypassed {
+                    hse_enable(rcc);
+                } else {
+                    panic!("HSE in PY32F002B must be bypassed")
+                }
             }
             SysClkSource::HSISYS(fs) => {
                 hsi_enable(rcc, fs);
@@ -257,18 +268,12 @@ mod inner {
     }
 
     #[cfg(feature = "py32f030")]
-    pub(super) fn enable_pll(
-        rcc: &mut RCC,
-        c_src: &SysClkSource,
-        ppre_bits: u8,
-        hpre_bits: u8,
-    ) {
+    pub(super) fn enable_pll(rcc: &mut RCC, c_src: &SysClkSource, ppre_bits: u8, hpre_bits: u8) {
         let pllsrc_bit = match c_src {
             SysClkSource::HSISYS(_) => false,
             SysClkSource::HSE(_, _) => true,
         };
-        rcc.pllcfgr
-            .modify(|_, w| w.pllsrc().bit(pllsrc_bit));
+        rcc.pllcfgr.modify(|_, w| w.pllsrc().bit(pllsrc_bit));
 
         rcc.cr.modify(|_, w| w.pllon().set_bit());
         while rcc.cr.read().pllrdy().bit_is_clear() {}
@@ -277,7 +282,7 @@ mod inner {
             .modify(|_, w| unsafe { w.ppre().bits(ppre_bits).hpre().bits(hpre_bits).sw().pll() });
     }
 
-    #[cfg(not(feature = "py32f030"))]
+    #[cfg(any(feature = "py32f003", feature = "py32f002a", feature = "py32f002b"))]
     #[inline(always)]
     pub(super) fn enable_pll(
         _rcc: &mut RCC,
@@ -285,13 +290,12 @@ mod inner {
         _ppre_bits: u8,
         _hpre_bits: u8,
     ) {
-        panic!("PLL only supported on py32f030 and py32f003. Please select a sysclk and clock source combination so as to not require the use of PLL")
+        panic!("PLL only supported on py32f030. Please select a sysclk and clock source combination so as to not require the use of PLL")
     }
 
     pub(super) fn get_sww(c_src: &SysClkSource) -> SW_A {
         match c_src {
             SysClkSource::HSISYS(_) => SW_A::Hsisys,
-            #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
             SysClkSource::HSE(_, _) => SW_A::Hse,
         }
     }
@@ -316,9 +320,16 @@ impl CFGR {
         self.clock_src = SysClkSource::HSE(freq.into().0, bypass);
         self
     }
-
-    pub fn hsi(mut self, fs: HSIFreq) -> Self
+    #[cfg(feature = "py32f002b")]
+    pub fn hse_bypass<F>(mut self, freq: F) -> Self
+    where
+        F: Into<Hertz>,
     {
+        self.clock_src = SysClkSource::HSE(freq.into().0, HSEBypassMode::Bypassed);
+        self
+    }
+
+    pub fn hsi(mut self, fs: HSIFreq) -> Self {
         self.clock_src = SysClkSource::HSISYS(fs);
         self
     }
@@ -338,7 +349,6 @@ impl CFGR {
         self.pclk = Some(freq.into().0);
         self
     }
-
 
     pub fn sysclk<F>(mut self, freq: F) -> Self
     where
@@ -434,13 +444,7 @@ impl CFGR {
 
         // Enable PLL
         if pll_en {
-            
-            self::inner::enable_pll(
-                &mut self.rcc,
-                &self.clock_src,
-                ppre_bits,
-                hpre_bits,
-            );
+            self::inner::enable_pll(&mut self.rcc, &self.clock_src, ppre_bits, hpre_bits);
         } else {
             let sw_var = self::inner::get_sww(&self.clock_src);
 

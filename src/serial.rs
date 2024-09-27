@@ -17,7 +17,7 @@
 //! use nb::block;
 //!
 //! cortex_m::interrupt::free(|cs| {
-//!     let rcc = p.RCC.configure().sysclk(48.mhz()).freeze();
+//!     let rcc = p.RCC.configure().sysclk(24.mhz()).freeze();
 //!
 //!     let gpioa = p.GPIOA.split(&mut rcc);
 //!
@@ -44,7 +44,7 @@
 //! use nb::block;
 //!
 //! cortex_m::interrupt::free(|cs| {
-//!     let rcc = p.RCC.configure().sysclk(48.mhz()).freeze();
+//!     let rcc = p.RCC.configure().sysclk(24.mhz()).freeze();
 //!
 //!     let gpioa = p.GPIOA.split(&mut rcc);
 //!
@@ -66,17 +66,18 @@ use core::{
 
 use embedded_hal::prelude::*;
 
+use crate::gpio::{gpioa::*, gpiob::*};
+use crate::gpio::{Alternate, AF1};
 use crate::{rcc::Rcc, time::Bps};
-use crate::gpio::{gpioa::*, gpiob::*, Alternate, AF0, AF1, AF8};
-
-#[cfg(feature = "py32f002b")]
-use crate::gpio::AF3;
 
 #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
-use crate::gpio::gpiof::*;
+use crate::gpio::{gpiof::*, AF0, AF8};
 
 #[cfg(any(feature = "py32f030", feature = "py32f003"))]
 use crate::gpio::{AF3, AF4, AF9};
+
+#[cfg(feature = "py32f002b")]
+use crate::gpio::AF3;
 
 use core::marker::PhantomData;
 
@@ -117,38 +118,7 @@ macro_rules! impl_pins {
     }
 }
 
-#[cfg(any(
-    feature = "lqfp32k1",
-    feature = "lqfp32k2",
-    feature = "qfn32k2",
-))]
-impl_pins!(
-    PA8, AF8, USART1, RxPin;
-    PA8, AF9, USART2, RxPin;
-    PA9, AF1, USART1, TxPin;
-    PA9, AF4, USART2, TxPin;
-    PA9, AF8, USART1, RxPin;
-    PA10, AF1, USART1, RxPin;
-    PA10, AF4, USART2, RxPin;
-    PA10, AF8, USART1, TxPin;
-
-    PB6, AF0, USART1, TxPin;
-    PB6, AF4, USART2, TxPin;
-    PB7, AF0, USART1, RxPin;
-    PB7, AF4, USART2, RxPin;
-
-    PF3, AF0, USART1, TxPin;
-    PF3, AF4, USART2, TxPin;
-);
-
-#[cfg(any(
-    feature = "lqfp32k1",
-    feature = "lqfp32k2",
-    feature = "qfn32k2",
-
-    feature = "ssop24e1",
-    feature = "ssop24e2",
-))]
+#[cfg(any(feature = "py32f030", feature = "py32f003"))]
 impl_pins!(
     PA0, AF9, USART2, TxPin;
     PA1, AF9, USART2, RxPin;
@@ -163,12 +133,14 @@ impl_pins!(
     PA13, AF8, USART1, RxPin;
     PA14, AF1, USART1, TxPin;
     PA14, AF4, USART2, TxPin;
-    PA15, AF1, USART1, RxPin;
-    PA15, AF4, USART2, RxPin;
+
     PB2, AF0, USART1, RxPin;
     PB2, AF3, USART2, RxPin;
-    PB8, AF4, USART2, TxPin;
-    PB8, AF8, USART1, TxPin;
+    PB6, AF0, USART1, TxPin;
+    PB6, AF4, USART2, TxPin;
+    PB7, AF0, USART1, RxPin;
+    PB7, AF4, USART2, RxPin;
+
     PF0, AF4, USART2, RxPin;
     PF0, AF8, USART1, RxPin;
     PF0, AF9, USART2, TxPin;
@@ -176,6 +148,25 @@ impl_pins!(
     PF1, AF8, USART1, TxPin;
     PF1, AF9, USART2, RxPin;
     PF2, AF4, USART2, RxPin;
+    PF3, AF0, USART1, TxPin;
+    PF3, AF4, USART2, TxPin;
+);
+
+#[cfg(feature = "py32f030")]
+impl_pins!(
+    PA8, AF8, USART1, RxPin;
+    PA8, AF9, USART2, RxPin;
+    PA9, AF1, USART1, TxPin;
+    PA9, AF4, USART2, TxPin;
+    PA9, AF8, USART1, RxPin;
+    PA10, AF1, USART1, RxPin;
+    PA10, AF4, USART2, RxPin;
+    PA10, AF8, USART1, TxPin;
+    PA15, AF1, USART1, RxPin;
+    PA15, AF4, USART2, RxPin;
+
+    PB8, AF4, USART2, TxPin;
+    PB8, AF8, USART1, TxPin;
 );
 
 #[cfg(feature = "py32f002a")]
@@ -194,7 +185,7 @@ impl_pins!(
 
     PA13, AF8, USART1, RxPin;
     PA14, AF1, USART1, TxPin;
-    
+
     PB2, AF0, USART1, RxPin;
     PB6, AF0, USART1, TxPin;
 
@@ -210,6 +201,7 @@ impl_pins!(
     PA6, AF1, USART1, TxPin;
     PA7, AF1, USART1, TxPin;
     PA7, AF3, USART1, RxPin;
+
     PB4, AF1, USART1, TxPin;
     PB5, AF1, USART1, RxPin;
     PB6, AF1, USART1, TxPin;
@@ -364,6 +356,7 @@ macro_rules! usart {
 
 #[cfg(any(
     feature = "py32f002a",
+    feature = "py32f002b",
     feature = "py32f003",
     feature = "py32f030",
 ))]
@@ -371,10 +364,7 @@ usart! {
     USART1: (usart1, usart1tx, usart1rx, usart1en, apbenr2),
 }
 
-#[cfg(any(
-    feature = "py32f003",
-    feature = "py32f030",
-))]
+#[cfg(any(feature = "py32f003", feature = "py32f030",))]
 usart! {
     USART2: (usart2, usart2tx, usart2rx,usart2en, apbenr1),
 }

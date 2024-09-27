@@ -190,6 +190,9 @@ gpio_trait!(gpioa);
 
 #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
 gpio_trait!(gpiof);
+#[cfg(feature = "py32f002b")]
+gpio_trait!(gpioc);
+
 macro_rules! gpio {
     ([$($GPIOX:ident, $gpiox:ident, $gpioxenr:ident, $PXx:ident, $gate:meta => [
         $($PXi:ident: ($pxi:ident, $i:expr, $MODE:ty),)+
@@ -247,8 +250,7 @@ macro_rules! gpio {
                             reg.afrl.modify(|r, w| {
                                 w.bits((r.bits() & !(0b1111 << offset2)) | (mode << offset2))
                             });
-                        } 
-                        else {
+                        } else {
                             #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))] {
                                 let offset2 = offset2 - 32;
                                 reg.afrh.modify(|r, w| {
@@ -692,13 +694,17 @@ gpio!([
         PB6: (pb6, 6, Input<Floating>),
         PB7: (pb7, 7, Input<Floating>),
         PB8: (pb8, 8, Input<Floating>),
-    ]
-]);
-
-#[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
-gpio!([
+    ],
+    GPIOC, gpioc, gpiocen, PC, any(
+        feature = "py32f002b"
+    ) => [
+        PC0: (pf0, 0, Input<Floating>),
+        PC1: (pf1, 1, Input<Floating>),
+    ],
     GPIOF, gpiof, gpiofen, PF, any(
-        feature = "device-selected"
+        feature = "py32f030",
+        feature = "py32f003",
+        feature = "py32f002a"
     ) => [
         PF0: (pf0, 0, Input<Floating>),
         PF1: (pf1, 1, Input<Floating>),

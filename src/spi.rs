@@ -46,9 +46,7 @@ pub use embedded_hal::spi::{Mode, Phase, Polarity};
 // TODO Put this inside the macro
 // Currently that causes a compiler panic
 use crate::pac::SPI1;
-#[cfg(any(
-    feature = "py32f030",
-))]
+#[cfg(any(feature = "py32f030",))]
 use crate::pac::SPI2;
 
 use crate::gpio::*;
@@ -106,44 +104,7 @@ macro_rules! spi_pins {
     }
 }
 
-#[cfg(any(
-    feature = "lqfp32k1",
-    feature = "lqfp32k2",
-    feature = "qfn32k2",
-))]
-spi_pins! {
-    SPI1 => {
-        sck =>  [
-            gpioa::PA1<Alternate<AF0>>,
-            gpioa::PA2<Alternate<AF10>>,
-            gpioa::PA5<Alternate<AF0>>,
-            gpioa::PA9<Alternate<AF10>>,
-            gpiob::PB3<Alternate<AF0>>,
-        ],
-        miso => [
-            gpioa::PA0<Alternate<AF10>>,
-            gpioa::PA3<Alternate<AF0>>,
-            gpioa::PA6<Alternate<AF0>>,
-            gpioa::PA7<Alternate<AF10>>,
-            gpioa::PA11<Alternate<AF0>>,
-            gpioa::PA13<Alternate<AF10>>,
-            gpiob::PB4<Alternate<AF0>>,
-        ],
-        mosi => [
-            gpioa::PA1<Alternate<AF10>>,
-            gpioa::PA2<Alternate<AF0>>,
-            gpioa::PA3<Alternate<AF10>>,
-            gpioa::PA7<Alternate<AF0>>,
-            gpioa::PA8<Alternate<AF10>>,
-            gpioa::PA12<Alternate<AF0>>,
-            gpiob::PB5<Alternate<AF0>>,
-        ],
-    }
-}
-#[cfg(any(
-    feature = "ssop24e1",
-    feature = "ssop24e2",
-))]
+#[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
 spi_pins! {
     SPI1 => {
         sck =>  [
@@ -171,12 +132,19 @@ spi_pins! {
     }
 }
 
-#[cfg(any(
-    feature = "lqfp32k1",
-    feature = "lqfp32k2",
-    feature = "qfn32k2",
-))]
+#[cfg(feature = "py32f030")]
 spi_pins! {
+    SPI1 => {
+        sck =>  [
+            gpioa::PA9<Alternate<AF10>>,
+        ],
+        miso => [
+            gpioa::PA11<Alternate<AF0>>,
+        ],
+        mosi => [
+            gpioa::PA8<Alternate<AF10>>,
+        ],
+    }
     SPI2 => {
         sck =>  [
             gpioa::PA1<Alternate<AF0>>,
@@ -199,25 +167,23 @@ spi_pins! {
         ],
     }
 }
-#[cfg(any(
-    feature = "ssop24e1",
-    feature = "ssop24e2",
-))]
+
+#[cfg(feature = "py32f002b")]
 spi_pins! {
-    SPI2 => {
+    SPI1 => {
         sck =>  [
-            gpioa::PA1<Alternate<AF0>>,
-            gpiob::PB2<Alternate<AF1>>,
-            gpiob::PB8<Alternate<AF1>>,
-            gpiof::PF0<Alternate<AF3>>,
+            gpiob::PB0<Alternate<AF0>>,
+            gpiob::PB2<Alternate<AF0>>,
         ],
         miso => [
-            gpioa::PA3<Alternate<AF0>>,
-            gpiof::PF1<Alternate<AF3>>,
+            gpioa::PA1<Alternate<AF0>>,
+            gpiob::PB6<Alternate<AF2>>,
+            gpioc::PC1<Alternate<AF0>>,
         ],
         mosi => [
-            gpioa::PA4<Alternate<AF2>>,
-            gpiof::PF2<Alternate<AF3>>,
+            gpioa::PA0<Alternate<AF0>>,
+            gpioa::PA7<Alternate<AF0>>,
+            gpiob::PB7<Alternate<AF0>>,
         ],
     }
 }
@@ -257,9 +223,7 @@ macro_rules! spi {
 spi! {
     SPI1: (spi1, spi1en, spi1rst, apbenr2, apbrstr2),
 }
-#[cfg(
-    feature = "py32f030",
-)]
+#[cfg(feature = "py32f030")]
 spi! {
     SPI2: (spi2, spi2en, spi2rst, apbenr1, apbrstr1),
 }
@@ -324,14 +288,18 @@ where
         self
     }
 
-    #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
     pub fn into_8bit_width(self) -> Spi<SPI, SCKPIN, MISOPIN, MOSIPIN, EightBit> {
         // FRXTH: 8-bit threshold on RX FIFO
         // DS: 8-bit data size
         // SSOE: cleared to disable SS output
+        #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
         self.spi
             .cr2
             .write(|w| w.frxth().set_bit().ds().eight_bit().ssoe().clear_bit());
+        #[cfg(feature = "py32f002b")]
+        self.spi
+            .cr2
+            .write(|w| w.ds().eight_bit().ssoe().clear_bit());
 
         Spi {
             spi: self.spi,
@@ -340,14 +308,18 @@ where
         }
     }
 
-    #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
     pub fn into_16bit_width(self) -> Spi<SPI, SCKPIN, MISOPIN, MOSIPIN, SixteenBit> {
         // FRXTH: 16-bit threshold on RX FIFO
         // DS: 8-bit data size
         // SSOE: cleared to disable SS output
+        #[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
         self.spi
             .cr2
             .write(|w| w.frxth().set_bit().ds().sixteen_bit().ssoe().clear_bit());
+        #[cfg(feature = "py32f002b")]
+        self.spi
+            .cr2
+            .write(|w| w.ds().sixteen_bit().ssoe().clear_bit());
 
         Spi {
             spi: self.spi,

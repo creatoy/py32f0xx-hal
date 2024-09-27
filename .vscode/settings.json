@@ -1,4 +1,5 @@
 {
-    "rust-analyzer.cargo.features": ["py32f002b"],
-    "rust-analyzer.showUnlinkedFileNotification": false
+    "rust-analyzer.cargo.features": ["py32f002ax5"],
+    // "rust-analyzer.showUnlinkedFileNotification": false,
+    "rust-analyzer.check.allTargets": false
 }

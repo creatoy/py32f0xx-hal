@@ -5,7 +5,7 @@ use embedded_hal::blocking::i2c::{Read, Write, WriteRead};
 use crate::{
     gpio::*,
     rcc::Rcc,
-    time::{KiloHertz, U32Ext, Hertz},
+    time::{Hertz, KiloHertz, U32Ext},
 };
 
 /// I2C abstraction
@@ -34,7 +34,7 @@ macro_rules! i2c_pins {
 }
 
 // TODO: Double check if all parts aexcept f002b support these
-#[cfg(not(feature = "py32f002b"))]
+#[cfg(any(feature = "py32f030", feature = "py32f003", feature = "py32f002a"))]
 i2c_pins! {
     I2C => {
         scl => [
@@ -109,7 +109,6 @@ i2c! {
     I2C: (i2c, i2cen, i2crst, apbenr1, apbrstr1),
 }
 
-
 // It's s needed for the impls, but rustc doesn't recognize that
 #[allow(dead_code)]
 type I2cRegisterBlock = crate::pac::i2c::RegisterBlock;
@@ -124,8 +123,9 @@ where
 
         let f = freq.0 / 1_000_000;
 
-        self.i2c.cr2.write(|w| unsafe { w.freq().bits(f.clamp(4, 48) as u8) });
-
+        self.i2c
+            .cr2
+            .write(|w| unsafe { w.freq().bits(f.clamp(4, 48) as u8) });
 
         // Normal I2C speeds use a different scaling than fast mode below
         let (f_s, ccr) = if speed <= 100_u32.khz() {
@@ -133,19 +133,18 @@ where
             (false, freq.0 / (speed.0 * 2))
         } else {
             // This is a fast I2C mode
-            (true,
+            (
+                true,
                 if self.i2c.ccr.read().duty().bit_is_set() {
                     freq.0 / (speed.0 * 25)
                 } else {
                     freq.0 / (speed.0 * 3)
-                }
+                },
             )
         };
-        self.i2c.ccr.modify(|_, w| unsafe { 
-            w
-                .f_s().bit(f_s)
-                .ccr().bits(ccr.clamp(4, 4095) as u16)
-            });
+        self.i2c
+            .ccr
+            .modify(|_, w| unsafe { w.f_s().bit(f_s).ccr().bits(ccr.clamp(4, 4095) as u16) });
 
         // Enable the I2C processing
         self.i2c.cr1.modify(|_, w| w.pe().set_bit());
@@ -172,7 +171,9 @@ where
 
         // If we have a set arbitration error or bus error flag, clear it and return an BUS error
         if sr.arlo().bit_is_set() | sr.berr().bit_is_set() {
-            self.i2c.sr1.write(|w| w.arlo().clear_bit().berr().clear_bit());
+            self.i2c
+                .sr1
+                .write(|w| w.arlo().clear_bit().berr().clear_bit());
             return Err(Error::BUS);
         }
 
