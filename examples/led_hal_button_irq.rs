@@ -39,13 +39,12 @@ fn main() -> ! {
 
             let gpioa = p.GPIOA.split(&mut rcc);
             let gpiob = p.GPIOB.split(&mut rcc);
-            let syscfg = p.SYSCFG;
             let exti = p.EXTI;
 
             // Configure PB2 as input (button)
             let _ = gpiob.pb2.into_pull_down_input(cs);
 
-            // Configure PA1 as output (LED)
+            // Configure PA5 as output (LED)
             let mut led = gpioa.pa5.into_push_pull_output(cs);
 
             // Turn off LED
@@ -55,7 +54,7 @@ fn main() -> ! {
             let delay = Delay::new(cp.SYST, &rcc);
 
             // Enable external interrupt for PB2
-            exti.exticr1.modify(|_, w| unsafe { w.exti2().pb() });
+            exti.exticr1.modify(|_, w| w.exti2().pb());
 
             // Set interrupt request mask for line 2
             exti.imr.modify(|_, w| w.im2().set_bit());

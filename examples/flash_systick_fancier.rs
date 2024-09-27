@@ -14,7 +14,7 @@ use core::cell::RefCell;
 use core::mem::swap;
 
 // A type definition for the GPIO pin to be used for our LED
-type LEDPIN = gpiob::PB3<Output<PushPull>>;
+type LEDPIN = gpioa::PA5<Output<PushPull>>;
 
 // Mutex protected structure for our shared GPIO pin
 static GPIO: Mutex<RefCell<Option<LEDPIN>>> = Mutex::new(RefCell::new(None));
@@ -23,13 +23,13 @@ static GPIO: Mutex<RefCell<Option<LEDPIN>>> = Mutex::new(RefCell::new(None));
 fn main() -> ! {
     if let (Some(mut p), Some(cp)) = (pac::Peripherals::take(), Peripherals::take()) {
         cortex_m::interrupt::free(move |cs| {
-            let mut rcc = p.RCC.configure().sysclk(48.mhz()).freeze(&mut p.FLASH);
+            let mut rcc = p.RCC.configure().sysclk(24.mhz()).freeze(&mut p.FLASH);
 
             // Get access to individual pins in the GPIO port
-            let gpioa = p.GPIOB.split(&mut rcc);
+            let gpioa = p.GPIOA.split(&mut rcc);
 
             // (Re-)configure the pin connected to our LED as output
-            let led = gpioa.pb3.into_push_pull_output(cs);
+            let led = gpioa.pa5.into_push_pull_output(cs);
 
             // Transfer GPIO into a shared structure
             swap(&mut Some(led), &mut GPIO.borrow(cs).borrow_mut());
@@ -42,8 +42,8 @@ fn main() -> ! {
             // Set source for SysTick counter, here full operating frequency (== 48MHz)
             syst.set_clock_source(Core);
 
-            // Set reload value, i.e. timer delay 48 MHz/4 Mcounts == 12Hz or 83ms
-            syst.set_reload(4_000_000 - 1);
+            // Set reload value, i.e. timer delay 24 MHz/2 Mcounts == 12Hz or 83ms
+            syst.set_reload(2_000_000 - 1);
 
             // Start counting
             syst.enable_counter();

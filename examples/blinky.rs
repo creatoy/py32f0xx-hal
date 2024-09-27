@@ -16,16 +16,16 @@ fn main() -> ! {
 
         let gpioa = p.GPIOA.split(&mut rcc);
 
-        // (Re-)configure PA1 as output
+        // (Re-)configure PA5 as output
         let mut led = cortex_m::interrupt::free(|cs| gpioa.pa5.into_push_pull_output(cs));
 
         let mut i = 0;
         loop {
-            // Turn PA1 on a million times in a row
+            // Turn PA5 on a million times in a row
             for _ in 0..1_000_000 {
                 led.set_high().ok();
             }
-            // Then turn PA1 off a million times in a row
+            // Then turn PA5 off a million times in a row
             for _ in 0..1_000_000 {
                 led.set_low().ok();
             }

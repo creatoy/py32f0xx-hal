@@ -3,25 +3,28 @@
 
 use panic_halt as _;
 
-use rtt_target::{rprintln, rtt_init_default};
+use defmt_rtt as _;
 
 use py32f0xx_hal as hal;
 
 use crate::hal::{i2c::I2c, pac, prelude::*};
 
 use cortex_m_rt::entry;
+use defmt::info;
 
 /* Example meant for py32f030xc MCUs with i2c devices connected on PB7 and PB8 */
 
 #[entry]
 fn main() -> ! {
-    let channels = rtt_init_default!();
-    rtt_target::set_print_channel(channels.up.0);
-
     if let Some(p) = pac::Peripherals::take() {
         cortex_m::interrupt::free(move |cs| {
             let mut flash = p.FLASH;
-            let mut rcc = p.RCC.configure().freeze(&mut flash);
+            let mut rcc = p
+                .RCC
+                .configure()
+                .sysclk(24.mhz())
+                .pclk(24.mhz())
+                .freeze(&mut flash);
 
             let gpioa = p.GPIOA.split(&mut rcc);
 
@@ -44,7 +47,7 @@ fn main() -> ! {
             }
 
             // Here the variable "_devices" counts how many i2c addresses were a hit
-            rprintln!("{} devices find.\r\n", devices);
+            info!("{} devices find.\r\n", devices);
         });
     }
 

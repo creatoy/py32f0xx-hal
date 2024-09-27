@@ -20,12 +20,12 @@ fn main() -> ! {
         let gpioa = dp.GPIOA.split(&mut rcc);
         let channels = cortex_m::interrupt::free(move |cs| {
             (
-                gpioa.pa6.into_alternate_af1(cs),
-                gpioa.pa5.into_alternate_af13(cs),
+                gpioa.pa8.into_alternate_af2(cs), // on TIM1_CH1
+                gpioa.pa9.into_alternate_af2(cs), // on TIM1_CH2
             )
         });
 
-        let pwm = pwm::tim3(dp.TIM3, channels, &mut rcc, 20u32.khz());
+        let pwm = pwm::tim1(dp.TIM1, channels, &mut rcc, 20u32.khz());
         let (mut ch1, mut ch2) = pwm;
         let max_duty = ch1.get_max_duty();
         ch1.set_duty(max_duty / 2);

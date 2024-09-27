@@ -43,8 +43,8 @@ fn main() -> ! {
                 gpioa.pa6.into_alternate_af0(cs),
                 gpioa.pa7.into_alternate_af0(cs),
                 // USART pins
-                gpioa.pa9.into_alternate_af1(cs),
-                gpioa.pa10.into_alternate_af1(cs),
+                gpioa.pa2.into_alternate_af1(cs),
+                gpioa.pa3.into_alternate_af1(cs),
             )
         });
 

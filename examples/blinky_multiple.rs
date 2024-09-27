@@ -20,7 +20,7 @@ fn main() -> ! {
 
         let (led1, led2) = cortex_m::interrupt::free(move |cs| {
             (
-                // (Re-)configure PA1 as output
+                // (Re-)configure PA5 as output
                 gpioa.pa5.into_push_pull_output(cs),
                 // (Re-)configure PB1 as output
                 gpiob.pb1.into_push_pull_output(cs),

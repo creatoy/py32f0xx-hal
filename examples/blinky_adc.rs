@@ -19,7 +19,7 @@ fn main() -> ! {
 
         let (mut led, mut an_in) = cortex_m::interrupt::free(move |cs| {
             (
-                // (Re-)configure PA1 as output
+                // (Re-)configure PA5 as output
                 gpioa.pa5.into_push_pull_output(cs),
                 // (Re-)configure PA0 as analog input
                 gpioa.pa0.into_analog(cs),

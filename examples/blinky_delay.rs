@@ -17,7 +17,7 @@ fn main() -> ! {
 
         let gpioa = p.GPIOA.split(&mut rcc);
 
-        // (Re-)configure PA1 as output
+        // (Re-)configure PA5 as output
         let mut led = cortex_m::interrupt::free(move |cs| gpioa.pa5.into_push_pull_output(cs));
 
         // Get delay provider

@@ -1,6 +1,7 @@
 #![no_main]
 #![no_std]
 
+use defmt_rtt as _;
 use panic_halt as _;
 
 use py32f0xx_hal as hal;
@@ -13,19 +14,21 @@ use cortex_m_rt::{entry, exception};
 use core::cell::RefCell;
 use core::ops::DerefMut;
 
+use defmt::info;
+
 // Mutex protected structure for our shared GPIO pin
-static GPIO: Mutex<RefCell<Option<gpioa::PA1<Output<PushPull>>>>> = Mutex::new(RefCell::new(None));
+static GPIO: Mutex<RefCell<Option<gpioa::PA5<Output<PushPull>>>>> = Mutex::new(RefCell::new(None));
 
 #[entry]
 fn main() -> ! {
     if let (Some(mut p), Some(cp)) = (pac::Peripherals::take(), Peripherals::take()) {
         cortex_m::interrupt::free(move |cs| {
-            let mut rcc = p.RCC.configure().sysclk(48.mhz()).freeze(&mut p.FLASH);
+            let mut rcc = p.RCC.configure().sysclk(24.mhz()).freeze(&mut p.FLASH);
 
             let gpioa = p.GPIOA.split(&mut rcc);
 
-            // (Re-)configure PA1 as output
-            let led = gpioa.pa1.into_push_pull_output(cs);
+            // (Re-)configure PA5 as output
+            let led = gpioa.pa5.into_push_pull_output(cs);
 
             // Transfer GPIO into a shared structure
             *GPIO.borrow(cs).borrow_mut() = Some(led);
@@ -38,8 +41,8 @@ fn main() -> ! {
             // Set source for SysTick counter, here full operating frequency (== 48MHz)
             syst.set_clock_source(Core);
 
-            // Set reload value, i.e. timer delay 48 MHz/4 Mcounts == 12Hz or 83ms
-            syst.set_reload(4_000_000 - 1);
+            // Set reload value, i.e. timer delay 24 MHz/2 Mcounts == 12Hz or 83ms
+            syst.set_reload(2_000_000 - 1);
 
             // Start counting
             syst.enable_counter();
@@ -79,6 +82,8 @@ fn SysTick() {
                 // And set new state variable back to 0
                 *STATE = 0;
             }
+
+            info!("Tick {}", *STATE);
         }
     });
 }
