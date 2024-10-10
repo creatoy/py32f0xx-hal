@@ -36,8 +36,10 @@ features = []
 [dev-dependencies]
 cortex-m-rt = "0.7.3"
 panic-halt = "0.2.0"
+panic-probe = { version = "0.3.2", features = ["print-defmt"] }
 defmt = "0.3.8"
 defmt-rtt = "0.4.1"
+mfrc522 = "0.6.1"
 
 [features]
 device-selected = []
