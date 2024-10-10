@@ -382,25 +382,19 @@ where
     }
 
     fn read_u8(&mut self) -> u8 {
-        // NOTE(read_volatile) read only 1 byte (the svd2rust API only allows reading a half-word)
-        unsafe { ptr::read_volatile(&self.spi.dr as *const _ as *const u8) }
+        self.spi.dr8().read().bits() as _
     }
 
     fn send_u8(&mut self, byte: u8) {
-        let dr = &self.spi.dr as *const _ as *const UnsafeCell<u8>;
-        // NOTE(write_volatile) see note above
-        unsafe { ptr::write_volatile(UnsafeCell::raw_get(dr), byte) };
+        self.spi.dr8().write(|w| w.dr().bits(byte as _));
     }
 
     fn read_u16(&mut self) -> u16 {
-        // NOTE(read_volatile) read only 2 bytes (the svd2rust API only allows reading a half-word)
-        unsafe { ptr::read_volatile(&self.spi.dr as *const _ as *const u16) }
+        self.spi.dr().read().bits() as _
     }
 
     fn send_u16(&mut self, byte: u16) {
-        let dr = &self.spi.dr as *const _ as *const UnsafeCell<u16>;
-        // NOTE(write_volatile) see note above
-        unsafe { ptr::write_volatile(UnsafeCell::raw_get(dr), byte) };
+        self.spi.dr().write(|w| w.dr().bits(byte as _));
     }
 
     pub fn release(self) -> (SPI, (SCKPIN, MISOPIN, MOSIPIN)) {

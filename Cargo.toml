@@ -30,7 +30,7 @@ nb = "1.1.0"
 void = { version = "1.0.2", default-features = false }
 
 [dependencies.py32f0]
-version = "0.1.0"
+version = "0.1.1"
 features = []
 
 [dev-dependencies]
